@@ -73,7 +73,7 @@ setup(
     project_urls={
         "Bug Tracker": "https://github.com/nextcord/nextcord-ext-menus/issues",
     },
-    packages=["discord.ext.menus"],
+    packages=["nextcord.ext.menus"],
     license="MIT",
     python_requires=">=3.8.0",
     install_requires=[requirements()],
