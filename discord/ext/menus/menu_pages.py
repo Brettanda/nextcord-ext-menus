@@ -1,7 +1,7 @@
 from typing import Any, List, Optional
 
-import nextcord
-from nextcord.ext import commands
+import discord
+from discord.ext import commands
 
 from .constants import PageFormatType, SendKwargsType
 from .menus import Button, ButtonMenu, Menu
@@ -75,14 +75,14 @@ class MenuPagesBase(Menu):
 
         Calls :meth:`PageSource.format_page` and returns a dict of send kwargs
         """
-        value: PageFormatType = await nextcord.utils.maybe_coroutine(
+        value: PageFormatType = await discord.utils.maybe_coroutine(
             self._source.format_page, self, page
         )
         if isinstance(value, dict):
             return value
         elif isinstance(value, str):
             return {"content": value, "embed": None}
-        elif isinstance(value, nextcord.Embed):
+        elif isinstance(value, discord.Embed):
             return {"embed": value, "content": None}
 
     async def show_page(self, page_number: int):
@@ -96,8 +96,8 @@ class MenuPagesBase(Menu):
         await self.message.edit(**kwargs)
 
     async def send_initial_message(
-        self, ctx: commands.Context, channel: nextcord.abc.Messageable
-    ) -> nextcord.Message:
+        self, ctx: commands.Context, channel: discord.abc.Messageable
+    ) -> discord.Message:
         """|coro|
 
         The default implementation of :meth:`Menu.send_initial_message`
@@ -113,7 +113,7 @@ class MenuPagesBase(Menu):
         self,
         ctx: commands.Context,
         *,
-        channel: Optional[nextcord.abc.Messageable] = None,
+        channel: Optional[discord.abc.Messageable] = None,
         wait: Optional[bool] = False
     ):
         await self._source._prepare_once()
@@ -204,13 +204,13 @@ class MenuPages(MenuPagesBase):
         )
 
 
-class MenuPaginationButton(nextcord.ui.Button["MenuPaginationButton"]):
+class MenuPaginationButton(discord.ui.Button["MenuPaginationButton"]):
     """
     A custom button for pagination used by :class:`ButtonMenuPages`
     that runs pagination methods in the :meth:`MenuPaginationButton.callback`
     corresponding to the emoji.
 
-    This is a subclass of :class:`nextcord.ui.Button` and as
+    This is a subclass of :class:`discord.ui.Button` and as
     such, accepts all of its parameters.
     """
 
@@ -219,7 +219,7 @@ class MenuPaginationButton(nextcord.ui.Button["MenuPaginationButton"]):
         emoji = kwargs.get("emoji", None)
         self._emoji = _cast_emoji(emoji) if emoji else None
 
-    async def callback(self, interaction: nextcord.Interaction):
+    async def callback(self, interaction: discord.Interaction):
         """
         Callback for when this button is pressed
         """
@@ -247,7 +247,7 @@ class ButtonMenuPages(MenuPagesBase, ButtonMenu):
 
     Parameters
     -----------
-    style: :class:`nextcord.ui.ButtonStyle`
+    style: :class:`discord.ui.ButtonStyle`
         The button style to use for the pagination buttons.
 
     Attributes
@@ -260,7 +260,7 @@ class ButtonMenuPages(MenuPagesBase, ButtonMenu):
     def __init__(
         self,
         source: PageSource,
-        style: nextcord.ButtonStyle = nextcord.ButtonStyle.secondary,
+        style: discord.ButtonStyle = discord.ButtonStyle.secondary,
         **kwargs
     ):
         self.__button_menu_pages__ = True
@@ -312,7 +312,7 @@ class ButtonMenuPages(MenuPagesBase, ButtonMenu):
         children: List[MenuPaginationButton] = self.children
         max_pages = self._source.get_max_pages()
         for child in children:
-            if isinstance(child, nextcord.ui.Button):
+            if isinstance(child, discord.ui.Button):
                 if str(child.emoji) in (self.FIRST_PAGE, self.PREVIOUS_PAGE):
                     child.disabled = self.current_page == 0
                 elif max_pages and str(child.emoji) in (self.LAST_PAGE, self.NEXT_PAGE):

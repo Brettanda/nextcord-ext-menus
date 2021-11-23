@@ -12,9 +12,9 @@ from typing import (
     Union,
 )
 
-import nextcord
-from nextcord.ext import commands
-from nextcord.permissions import Permissions
+import discord
+from discord.ext import commands
+from discord.permissions import Permissions
 
 from .constants import DEFAULT_TIMEOUT, EmojiType, log
 from .exceptions import (
@@ -35,13 +35,13 @@ class Button:
     :func:`button`.
 
     The action must have both a ``self`` and a ``payload`` parameter
-    of type :class:`nextcord.RawReactionActionEvent`.
+    of type :class:`discord.RawReactionActionEvent`.
 
     Attributes
     ------------
-    emoji: :class:`nextcord.PartialEmoji`
+    emoji: :class:`discord.PartialEmoji`
         The emoji to use as the button. Note that passing a string will
-        transform it into a :class:`nextcord.PartialEmoji`.
+        transform it into a :class:`discord.PartialEmoji`.
     action
         A coroutine that is called when the button is pressed.
     skip_if: Optional[Callable[[:class:`Menu`], :class:`bool`]]
@@ -62,7 +62,7 @@ class Button:
 
     def __init__(
         self,
-        emoji: nextcord.PartialEmoji,
+        emoji: discord.PartialEmoji,
         action: Coroutine,
         *,
         skip_if: Optional[Callable[["Menu"], bool]] = None,
@@ -123,7 +123,7 @@ class Button:
 
         self._action = value
 
-    def __call__(self, menu: "Menu", payload: nextcord.RawReactionActionEvent):
+    def __call__(self, menu: "Menu", payload: discord.RawReactionActionEvent):
         if self.skip_if(menu):
             return
         return self._action(menu, payload)
@@ -139,7 +139,7 @@ def button(emoji: EmojiType, **kwargs):
     """Denotes a method to be a reaction button for the :class:`Menu`.
 
     The methods being wrapped must have both a ``self`` and a ``payload``
-    parameter of type :class:`nextcord.RawReactionActionEvent`.
+    parameter of type :class:`discord.RawReactionActionEvent`.
 
     The keyword arguments are forwarded to the :class:`Button` constructor.
 
@@ -162,7 +162,7 @@ def button(emoji: EmojiType, **kwargs):
 
     Parameters
     ------------
-    emoji: Union[:class:`str`, :class:`nextcord.PartialEmoji`]
+    emoji: Union[:class:`str`, :class:`discord.PartialEmoji`]
         The emoji to use for the button.
     """
 
@@ -223,7 +223,7 @@ class Menu(metaclass=_MenuMeta):
 
     Buttons should be marked with the :func:`button` decorator. Please note that
     this expects the methods to have a single parameter, the ``payload``. This
-    ``payload`` is of type :class:`nextcord.RawReactionActionEvent`.
+    ``payload`` is of type :class:`discord.RawReactionActionEvent`.
 
     Attributes
     ------------
@@ -244,7 +244,7 @@ class Menu(metaclass=_MenuMeta):
     bot: Optional[:class:`commands.Bot`]
         The bot that is running this pagination session or ``None`` if it hasn't
         been started yet.
-    message: Optional[:class:`nextcord.Message`]
+    message: Optional[:class:`discord.Message`]
         The message that has been sent for handling the menu. This is the returned
         message of :meth:`send_initial_message`. You can set it in order to avoid
         calling :meth:`send_initial_message`\, if for example you have a pre-existing
@@ -258,7 +258,7 @@ class Menu(metaclass=_MenuMeta):
         delete_message_after: bool = False,
         clear_reactions_after: bool = False,
         check_embeds: bool = False,
-        message: Optional[nextcord.Message] = None
+        message: Optional[discord.Message] = None
     ):
 
         self.timeout = timeout
@@ -276,7 +276,7 @@ class Menu(metaclass=_MenuMeta):
         self._lock = asyncio.Lock()
         self._event = asyncio.Event()
 
-    @nextcord.utils.cached_property
+    @discord.utils.cached_property
     def buttons(self) -> Mapping[str, Button]:
         """Retrieves the reaction buttons that are to be used for this menu session.
 
@@ -321,7 +321,7 @@ class Menu(metaclass=_MenuMeta):
         ---------
         MenuError
             Tried to use ``react`` when the menu had not been started.
-        nextcord.HTTPException
+        discord.HTTPException
             Adding the reaction failed.
         """
 
@@ -334,7 +334,7 @@ class Menu(metaclass=_MenuMeta):
                     # Add the reaction
                     try:
                         await self.message.add_reaction(button.emoji)
-                    except nextcord.HTTPException:
+                    except discord.HTTPException:
                         raise
                     else:
                         # Update the cache to have the value
@@ -368,7 +368,7 @@ class Menu(metaclass=_MenuMeta):
         ---------
         MenuError
             Tried to use ``react`` when the menu had not been started.
-        nextcord.HTTPException
+        discord.HTTPException
             Removing the reaction failed.
         """
 
@@ -418,7 +418,7 @@ class Menu(metaclass=_MenuMeta):
         ---------
         MenuError
             Tried to use ``react`` when the menu had not been started.
-        nextcord.HTTPException
+        discord.HTTPException
             Clearing the reactions failed.
         """
 
@@ -448,7 +448,7 @@ class Menu(metaclass=_MenuMeta):
     def _verify_permissions(
         self,
         ctx: commands.Context,
-        channel: nextcord.abc.Messageable,
+        channel: discord.abc.Messageable,
         permissions: Permissions,
     ):
         if not permissions.send_messages:
@@ -464,15 +464,15 @@ class Menu(metaclass=_MenuMeta):
             if not permissions.read_message_history:
                 raise CannotReadMessageHistory()
 
-    def reaction_check(self, payload: nextcord.RawReactionActionEvent) -> bool:
+    def reaction_check(self, payload: discord.RawReactionActionEvent) -> bool:
         """The function that is used to check whether the payload should be processed.
-        This is passed to :meth:`nextcord.ext.commands.Bot.wait_for <Bot.wait_for>`.
+        This is passed to :meth:`discord.ext.commands.Bot.wait_for <Bot.wait_for>`.
 
         There should be no reason to override this function for most users.
 
         Parameters
         ------------
-        payload: :class:`nextcord.RawReactionActionEvent`
+        payload: :class:`discord.RawReactionActionEvent`
             The payload to check.
 
         Returns
@@ -559,14 +559,14 @@ class Menu(metaclass=_MenuMeta):
             elif getattr(self, "disable_buttons_after", None):
                 await self.disable()
 
-    async def update(self, payload: nextcord.RawReactionActionEvent):
+    async def update(self, payload: discord.RawReactionActionEvent):
         """|coro|
 
         Updates the menu after an event has been received.
 
         Parameters
         -----------
-        payload: :class:`nextcord.RawReactionActionEvent`
+        payload: :class:`discord.RawReactionActionEvent`
             The reaction event that triggered this update.
         """
         button = self.buttons[payload.emoji]
@@ -604,7 +604,7 @@ class Menu(metaclass=_MenuMeta):
         self,
         ctx: commands.Context,
         *,
-        channel: Optional[nextcord.abc.Messageable] = None,
+        channel: Optional[discord.abc.Messageable] = None,
         wait: bool = False
     ):
         """|coro|
@@ -615,7 +615,7 @@ class Menu(metaclass=_MenuMeta):
         -----------
         ctx: :class:`Context`
             The invocation context to use.
-        channel: :class:`nextcord.abc.Messageable`
+        channel: :class:`discord.abc.Messageable`
             The messageable to send the message to. If not given
             then it defaults to the channel in the context.
         wait: :class:`bool`
@@ -626,7 +626,7 @@ class Menu(metaclass=_MenuMeta):
         -------
         MenuError
             An error happened when verifying permissions.
-        nextcord.HTTPException
+        discord.HTTPException
             Adding a reaction failed.
         """
 
@@ -642,7 +642,7 @@ class Menu(metaclass=_MenuMeta):
         channel = channel or ctx.channel
         me = channel.guild.me if hasattr(channel, "guild") else ctx.bot.user
         permissions = channel.permissions_for(me)
-        self.__me = nextcord.Object(id=me.id)
+        self.__me = discord.Object(id=me.id)
         self._verify_permissions(ctx, channel, permissions)
         self._event.clear()
         msg = self.message
@@ -682,8 +682,8 @@ class Menu(metaclass=_MenuMeta):
         pass
 
     async def send_initial_message(
-        self, ctx: commands.Context, channel: nextcord.abc.Messageable
-    ) -> nextcord.Message:
+        self, ctx: commands.Context, channel: discord.abc.Messageable
+    ) -> discord.Message:
         """|coro|
 
         Sends the initial message for the menu session.
@@ -698,12 +698,12 @@ class Menu(metaclass=_MenuMeta):
         ------------
         ctx: :class:`Context`
             The invocation context to use.
-        channel: :class:`nextcord.abc.Messageable`
+        channel: :class:`discord.abc.Messageable`
             The messageable to send the message to.
 
         Returns
         --------
-        :class:`nextcord.Message`
+        :class:`discord.Message`
             The message that has been sent.
         """
         raise NotImplementedError
@@ -736,7 +736,7 @@ class Menu(metaclass=_MenuMeta):
             for reaction in reactions:
                 try:
                     await self.message.remove_reaction(reaction, self.__me)
-                except nextcord.HTTPException:
+                except discord.HTTPException:
                     continue
         except Exception:
             pass
@@ -749,15 +749,15 @@ class Menu(metaclass=_MenuMeta):
         self.__tasks.clear()
 
 
-class ButtonMenu(Menu, nextcord.ui.View):
+class ButtonMenu(Menu, discord.ui.View):
     r"""An interface that allows handling menus by using button interaction components.
 
     This is a subclass of :class:`Menu` and as a result, any attributes and methods of :class:`Menu` are available here as well.
 
-    Buttons should be marked with the :func:`nextcord.ui.button` decorator. Please note that
+    Buttons should be marked with the :func:`discord.ui.button` decorator. Please note that
     this expects the methods to have two parameters, the ``button`` and the ``interaction``.
-    The ``button`` is of type :class:`nextcord.ui.Button`.
-    The ``interaction`` is of type :class:`nextcord.Interaction`.
+    The ``button`` is of type :class:`discord.ui.Button`.
+    The ``interaction`` is of type :class:`discord.Interaction`.
 
     Attributes
     ------------
@@ -774,7 +774,7 @@ class ButtonMenu(Menu, nextcord.ui.View):
     bot: Optional[:class:`commands.Bot`]
         The bot that is running this pagination session or ``None`` if it hasn't
         been started yet.
-    message: Optional[:class:`nextcord.Message`]
+    message: Optional[:class:`discord.Message`]
         The message that has been sent for handling the menu. This is the returned
         message of :meth:`send_initial_message`. You can set it in order to avoid
         calling :meth:`send_initial_message`\, if for example you have a pre-existing
@@ -796,7 +796,7 @@ class ButtonMenu(Menu, nextcord.ui.View):
         **kwargs
     ):
         Menu.__init__(self, timeout=timeout, *args, **kwargs)
-        nextcord.ui.View.__init__(self, timeout=timeout)
+        discord.ui.View.__init__(self, timeout=timeout)
         self.clear_buttons_after = clear_buttons_after
         self.disable_buttons_after = disable_buttons_after
 
@@ -806,7 +806,7 @@ class ButtonMenu(Menu, nextcord.ui.View):
     async def _set_all_disabled(self, disable: bool):
         """|coro|
 
-        Enables or disable all :class:`nextcord.ui.Button` components in the menu.
+        Enables or disable all :class:`discord.ui.Button` components in the menu.
 
         Parameters
         ------------
@@ -814,28 +814,28 @@ class ButtonMenu(Menu, nextcord.ui.View):
             Whether to disable or enable the buttons.
         """
         for child in self.children:
-            if isinstance(child, nextcord.ui.Button):
+            if isinstance(child, discord.ui.Button):
                 child.disabled = disable
         await self._update_view()
 
     async def enable(self):
         """|coro|
 
-        Enables all :class:`nextcord.ui.Button` components in the menu.
+        Enables all :class:`discord.ui.Button` components in the menu.
         """
         await self._set_all_disabled(False)
 
     async def disable(self):
         """|coro|
 
-        Disables all :class:`nextcord.ui.Button` components in the menu.
+        Disables all :class:`discord.ui.Button` components in the menu.
         """
         await self._set_all_disabled(True)
 
     async def clear(self):
         """|coro|
 
-        Removes all :class:`nextcord.ui.Button` components in the menu.
+        Removes all :class:`discord.ui.Button` components in the menu.
         """
         self.clear_items()
         await self._update_view()
@@ -845,4 +845,4 @@ class ButtonMenu(Menu, nextcord.ui.View):
         # stop the menu loop
         Menu.stop(self)
         # stop view interactions
-        nextcord.ui.View.stop(self)
+        discord.ui.View.stop(self)

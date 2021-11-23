@@ -3,7 +3,7 @@ from setuptools import setup
 import re
 
 version = ""
-with open("nextcord/ext/menus/__init__.py") as f:
+with open("discord/ext/menus/__init__.py") as f:
     version = re.search(
         r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE
     ).group(1)
@@ -63,17 +63,17 @@ extras_require = {
 }
 
 setup(
-    name="nextcord-ext-menus",
+    name="discord-ext-menus",
     version=version,
     author="Nextcord Developers",
-    description="An extension module to make reaction based menus with nextcord",
+    description="An extension module to make reaction based menus with discord",
     long_description=long_description(),
     long_description_content_type="text/markdown",
     url="https://github.com/nextcord/nextcord-ext-menus",
     project_urls={
         "Bug Tracker": "https://github.com/nextcord/nextcord-ext-menus/issues",
     },
-    packages=["nextcord.ext.menus"],
+    packages=["discord.ext.menus"],
     license="MIT",
     python_requires=">=3.8.0",
     install_requires=[requirements()],
