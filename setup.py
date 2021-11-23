@@ -63,7 +63,7 @@ extras_require = {
 }
 
 setup(
-    name="discord-ext-menus",
+    name="nextcord-ext-menus",
     version=version,
     author="Nextcord Developers",
     description="An extension module to make reaction based menus with discord",
@@ -73,7 +73,7 @@ setup(
     project_urls={
         "Bug Tracker": "https://github.com/nextcord/nextcord-ext-menus/issues",
     },
-    packages=["nextcord.ext.menus"],
+    packages=["discord.ext.menus"],
     license="MIT",
     python_requires=">=3.8.0",
     install_requires=[requirements()],
